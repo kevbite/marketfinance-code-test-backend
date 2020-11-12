@@ -25,9 +25,8 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
                 Product = product,
                 CompanyData = _fixture.Create<SellerCompanyData>()
             };
-            var productApplicationService = new ProductApplicationService(this, null, null);
-
-            productApplicationService.SubmitApplicationFor(application);
+            
+            SubmitApplication(application);
 
             _capturedApplications.Should()
                 .BeEquivalentTo(new Application(
@@ -47,10 +46,18 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
             };
             var expectedApplicationId = _fixture.Create<int>();
             _returnApplicationIds.Enqueue(expectedApplicationId);
+            
+            var applicationId = SubmitApplication(application);
+            
+            applicationId.Should().Be(expectedApplicationId);
+        }
+
+        private int SubmitApplication(SellerApplication application)
+        {
             var productApplicationService = new ProductApplicationService(this, null, null);
 
             var applicationId = productApplicationService.SubmitApplicationFor(application);
-            applicationId.Should().Be(expectedApplicationId);
+            return applicationId;
         }
 
 
