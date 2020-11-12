@@ -129,12 +129,6 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
                 => (CompanyDataRequest, TotalLedgerNetworth, AdvancePercentage, VatRate)
                     = (companyDataRequest, totalLedgerNetworth, advancePercentage, vatRate);
         }
-
-        public class TestApplicationResult : IApplicationResult
-        {
-            public int? ApplicationId { get; set; }
-            public bool Success { get; set; }
-            public IList<string> Errors { get; set; }
-        }
+        
     }
 }
