@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Globalization;
+using System.Net.Mime;
 using AutoFixture;
 using FluentAssertions;
 using SlothEnterprise.External;
@@ -12,6 +14,7 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
     public class ConfidentialInvoiceDiscountProductTests : IConfidentialInvoiceService
     {
         private readonly List<Application> _capturedApplications = new List<Application>();
+        private readonly Queue<IApplicationResult> _returnResults = new Queue<IApplicationResult>();
         private readonly Fixture _fixture = new Fixture();
 
         [Fact]
@@ -42,11 +45,32 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
                 });
         }
 
-        private void SubmitApplication(SellerApplication application)
+        [Fact]
+        public void ShouldReturnApplicationIdWhenApplicationIsSuccessful()
+        {
+            var application = new SellerApplication
+            {
+                Product = _fixture.Create<ConfidentialInvoiceDiscount>(),
+                CompanyData = _fixture.Create<SellerCompanyData>()
+            };
+            var expectedApplicationId = _fixture.Create<int>();
+            
+            _returnResults.Enqueue(new TestApplicationResult
+            {
+                ApplicationId = expectedApplicationId,
+                Success = true
+            });
+
+            var applicationId = SubmitApplication(application);
+
+            applicationId.Should().Be(expectedApplicationId);
+        }
+
+        private int SubmitApplication(SellerApplication application)
         {
             var productApplicationService = new ProductApplicationService(null, this, null);
 
-            productApplicationService.SubmitApplicationFor(application);
+            return productApplicationService.SubmitApplicationFor(application);
         }
 
         public IApplicationResult SubmitApplicationFor(CompanyDataRequest applicantData,
@@ -56,7 +80,8 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
             _capturedApplications.Add(new Application(applicantData, invoiceLedgerTotalValue, advantagePercentage,
                 vatRate));
 
-            return _fixture.Create<TestApplicationResult>();
+            return _returnResults.Count > 0
+                ? _returnResults.Dequeue() : _fixture.Create<TestApplicationResult>();
         }
 
         private class Application
