@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Globalization;
-using System.Net.Mime;
 using AutoFixture;
 using FluentAssertions;
 using SlothEnterprise.External;
@@ -48,11 +46,6 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
         [Fact]
         public void ShouldReturnApplicationIdWhenApplicationIsSuccessful()
         {
-            var application = new SellerApplication
-            {
-                Product = _fixture.Create<ConfidentialInvoiceDiscount>(),
-                CompanyData = _fixture.Create<SellerCompanyData>()
-            };
             var expectedApplicationId = _fixture.Create<int>();
             
             _returnResults.Enqueue(new TestApplicationResult
@@ -61,7 +54,7 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
                 Success = true
             });
 
-            var applicationId = SubmitApplication(application);
+            var applicationId = SubmitApplication();
 
             applicationId.Should().Be(expectedApplicationId);
         }
@@ -69,18 +62,13 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
         [Fact]
         public void ShouldReturnMinusOneWhenApplicationIsSuccessfulButNoApplicationIdIsReturned()
         {
-            var application = new SellerApplication
-            {
-                Product = _fixture.Create<ConfidentialInvoiceDiscount>(),
-                CompanyData = _fixture.Create<SellerCompanyData>()
-            };
             _returnResults.Enqueue(new TestApplicationResult
             {
                 ApplicationId = null,
                 Success = true
             });
 
-            var applicationId = SubmitApplication(application);
+            var applicationId = SubmitApplication();
 
             applicationId.Should().Be(-1);
         }
@@ -88,18 +76,13 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
         [Fact]
         public void ShouldReturnMinusOneWhenApplicationIsUnsuccessful()
         {
-            var application = new SellerApplication
-            {
-                Product = _fixture.Create<ConfidentialInvoiceDiscount>(),
-                CompanyData = _fixture.Create<SellerCompanyData>()
-            };
             _returnResults.Enqueue(new TestApplicationResult
             {
                 ApplicationId = _fixture.Create<int>(),
                 Success = false
             });
 
-            var applicationId = SubmitApplication(application);
+            var applicationId = SubmitApplication();
 
             applicationId.Should().Be(-1);
         }
@@ -110,6 +93,18 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
 
             return productApplicationService.SubmitApplicationFor(application);
         }
+        
+        private int SubmitApplication()
+        {
+            var application = new SellerApplication
+            {
+                Product = _fixture.Create<ConfidentialInvoiceDiscount>(),
+                CompanyData = _fixture.Create<SellerCompanyData>()
+            };
+
+            return SubmitApplication(application);
+        }
+
 
         public IApplicationResult SubmitApplicationFor(CompanyDataRequest applicantData,
             decimal invoiceLedgerTotalValue,
