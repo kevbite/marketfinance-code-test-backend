@@ -1,5 +1,4 @@
-﻿using SlothEnterprise.External;
-using SlothEnterprise.External.V1;
+﻿using SlothEnterprise.External.V1;
 using SlothEnterprise.ProductApplication.Applications;
 
 namespace SlothEnterprise.ProductApplication
@@ -17,17 +16,6 @@ namespace SlothEnterprise.ProductApplication
         public int SubmitApplicationFor(ISellerApplication application)
         {
             return _submitter.Dispatch(application);
-        }
-
-        public static CompanyDataRequest CreateCompanyDataRequest(ISellerCompanyData applicationCompanyData)
-        {
-            return new CompanyDataRequest
-            {
-                CompanyFounded = applicationCompanyData.Founded,
-                CompanyNumber = applicationCompanyData.Number,
-                CompanyName = applicationCompanyData.Name,
-                DirectorName = applicationCompanyData.DirectorName
-            };
         }
     }
 }

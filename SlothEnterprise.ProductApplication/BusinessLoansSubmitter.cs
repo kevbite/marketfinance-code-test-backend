@@ -15,12 +15,13 @@ namespace SlothEnterprise.ProductApplication
         public int Submit(ISellerApplication application, BusinessLoans product)
         {
             var result = _service.SubmitApplicationFor(
-                ProductApplicationService.CreateCompanyDataRequest(application.CompanyData), new LoansRequest
+                CompanyDataRequestBuilder.Create(application.CompanyData), new LoansRequest
                 {
                     InterestRatePerAnnum = product.InterestRatePerAnnum,
                     LoanAmount = product.LoanAmount
                 });
-            return result.Success ? result.ApplicationId ?? -1 : -1;
+            
+            return ApplicationResultEvaluator.Evaluate(result);
         }
     }
 }

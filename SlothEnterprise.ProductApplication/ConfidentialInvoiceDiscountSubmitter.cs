@@ -14,13 +14,12 @@ namespace SlothEnterprise.ProductApplication
         public int Submit(ISellerApplication application, ConfidentialInvoiceDiscount product)
         {
             var result = _confidentialInvoiceWebService.SubmitApplicationFor(
-                ProductApplicationService.CreateCompanyDataRequest(application.CompanyData),
+                CompanyDataRequestBuilder.Create(application.CompanyData),
                 product.TotalLedgerNetworth,
                 product.AdvancePercentage,
                 product.VatRate);
 
-            return result.Success ? result.ApplicationId ?? -1 : -1;
+            return ApplicationResultEvaluator.Evaluate(result);
         }
-
     }
 }
