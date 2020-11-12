@@ -65,6 +65,44 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
 
             applicationId.Should().Be(expectedApplicationId);
         }
+        
+        [Fact]
+        public void ShouldReturnMinusOneWhenApplicationIsSuccessfulButNoApplicationIdIsReturned()
+        {
+            var application = new SellerApplication
+            {
+                Product = _fixture.Create<ConfidentialInvoiceDiscount>(),
+                CompanyData = _fixture.Create<SellerCompanyData>()
+            };
+            _returnResults.Enqueue(new TestApplicationResult
+            {
+                ApplicationId = null,
+                Success = true
+            });
+
+            var applicationId = SubmitApplication(application);
+
+            applicationId.Should().Be(-1);
+        }
+        
+        [Fact]
+        public void ShouldReturnMinusOneWhenApplicationIsUnsuccessful()
+        {
+            var application = new SellerApplication
+            {
+                Product = _fixture.Create<ConfidentialInvoiceDiscount>(),
+                CompanyData = _fixture.Create<SellerCompanyData>()
+            };
+            _returnResults.Enqueue(new TestApplicationResult
+            {
+                ApplicationId = _fixture.Create<int>(),
+                Success = false
+            });
+
+            var applicationId = SubmitApplication(application);
+
+            applicationId.Should().Be(-1);
+        }
 
         private int SubmitApplication(SellerApplication application)
         {
