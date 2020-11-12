@@ -1,3 +1,4 @@
+using System.Globalization;
 using SlothEnterprise.External.V1;
 using SlothEnterprise.ProductApplication.Applications;
 using SlothEnterprise.ProductApplication.Products;
@@ -14,7 +15,7 @@ namespace SlothEnterprise.ProductApplication
         public int Submit(ISellerApplication application, SelectiveInvoiceDiscount product)
         {
             return _selectInvoiceService.SubmitApplicationFor(
-                application.CompanyData.Number.ToString(),
+                application.CompanyData.Number.ToString(CultureInfo.InvariantCulture),
                 product.InvoiceAmount,
                 product.AdvancePercentage);
         }
