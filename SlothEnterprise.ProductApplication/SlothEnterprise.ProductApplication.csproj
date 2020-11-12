@@ -8,4 +8,8 @@
     <ProjectReference Include="..\SlothEnterprise.External\SlothEnterprise.External.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+
 </Project>
