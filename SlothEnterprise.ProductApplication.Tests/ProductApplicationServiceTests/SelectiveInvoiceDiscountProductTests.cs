@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 using AutoFixture;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -51,6 +52,7 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
             
             applicationId.Should().Be(expectedApplicationId);
         }
+        
 
         private int SubmitApplication(SellerApplication application)
         {
@@ -60,6 +62,30 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
             return applicationId;
         }
 
+        
+        [Fact]
+        public void ShouldSubmitCompanyNumberFormattedCorrectly()
+        {
+            var testCulture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+            testCulture.NumberFormat.NegativeSign = "!";
+            Thread.CurrentThread.CurrentCulture = testCulture;
+            
+            var application = new SellerApplication
+            {
+                Product = _fixture.Create<SelectiveInvoiceDiscount>(),
+                CompanyData = _fixture.Build<SellerCompanyData>()
+                    .With(x => x.Number, -123456)
+                    .Create()
+            };
+            
+            SubmitApplication(application);
+
+            _capturedApplications.Should()
+                .BeEquivalentTo(new
+                {
+                    CompanyNumber = "-123456"
+                });
+        }
 
         public int SubmitApplicationFor(string companyNumber, decimal invoiceAmount, decimal advancePercentage)
         {
