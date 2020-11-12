@@ -13,6 +13,7 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
     public class SelectiveInvoiceDiscountProductTests : ISelectInvoiceService
     {
         private readonly List<Application> _capturedApplications = new List<Application>();
+        private readonly Queue<int> _returnApplicationIds = new Queue<int>();
         private readonly Fixture _fixture = new Fixture();
 
         [Fact]
@@ -35,12 +36,30 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
                     product.AdvancePercentage
                 ));
         }
+        
+        [Fact]
+        public void ShouldReturnCorrectApplicationId()
+        {
+            var application = new SellerApplication
+            {
+                Product = _fixture.Create<SelectiveInvoiceDiscount>(),
+                CompanyData = _fixture.Create<SellerCompanyData>()
+            };
+            var expectedApplicationId = _fixture.Create<int>();
+            _returnApplicationIds.Enqueue(expectedApplicationId);
+            var productApplicationService = new ProductApplicationService(this, null, null);
+
+            var applicationId = productApplicationService.SubmitApplicationFor(application);
+            applicationId.Should().Be(expectedApplicationId);
+        }
+
 
         public int SubmitApplicationFor(string companyNumber, decimal invoiceAmount, decimal advancePercentage)
         {
             _capturedApplications.Add(new Application(companyNumber, invoiceAmount, advancePercentage));
 
-            return _fixture.Create<int>();
+            return _returnApplicationIds.Count > 0
+                ? _returnApplicationIds.Dequeue() : _fixture.Create<int>();
         }
 
         private class Application
