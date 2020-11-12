@@ -13,6 +13,7 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
     public class BusinessLoansProductTests : IBusinessLoansService
     {
         private readonly List<Application> _capturedApplications = new List<Application>();
+        private readonly Queue<IApplicationResult> _returnResults = new Queue<IApplicationResult>();
         private readonly Fixture _fixture = new Fixture();
 
         [Fact]
@@ -44,12 +45,68 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
                     }
                 });
         }
-        
+
+
+        [Fact]
+        public void ShouldReturnApplicationIdWhenApplicationIsSuccessful()
+        {
+            var expectedApplicationId = _fixture.Create<int>();
+
+            _returnResults.Enqueue(new TestApplicationResult
+            {
+                ApplicationId = expectedApplicationId,
+                Success = true
+            });
+
+            var applicationId = SubmitApplication();
+
+            applicationId.Should().Be(expectedApplicationId);
+        }
+
+        [Fact]
+        public void ShouldReturnMinusOneWhenApplicationIsSuccessfulButNoApplicationIdIsReturned()
+        {
+            _returnResults.Enqueue(new TestApplicationResult
+            {
+                ApplicationId = null,
+                Success = true
+            });
+
+            var applicationId = SubmitApplication();
+
+            applicationId.Should().Be(-1);
+        }
+
+        [Fact]
+        public void ShouldReturnMinusOneWhenApplicationIsUnsuccessful()
+        {
+            _returnResults.Enqueue(new TestApplicationResult
+            {
+                ApplicationId = _fixture.Create<int>(),
+                Success = false
+            });
+
+            var applicationId = SubmitApplication();
+
+            applicationId.Should().Be(-1);
+        }
+
         private int SubmitApplication(ISellerApplication application)
         {
             var productApplicationService = new ProductApplicationService(null, null, this);
 
             return productApplicationService.SubmitApplicationFor(application);
+        }
+
+        private int SubmitApplication()
+        {
+            var application = new SellerApplication
+            {
+                Product = _fixture.Create<BusinessLoans>(),
+                CompanyData = _fixture.Create<SellerCompanyData>()
+            };
+
+            return SubmitApplication(application);
         }
 
 
@@ -67,7 +124,9 @@ namespace SlothEnterprise.ProductApplication.Tests.ProductApplicationServiceTest
         {
             _capturedApplications.Add(new Application(applicantData, businessLoans));
 
-            return  _fixture.Create<TestApplicationResult>();
+            return _returnResults.Count > 0
+                ? _returnResults.Dequeue()
+                : _fixture.Create<TestApplicationResult>();
         }
     }
 }
